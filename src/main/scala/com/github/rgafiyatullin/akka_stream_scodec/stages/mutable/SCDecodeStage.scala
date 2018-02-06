@@ -1,11 +1,12 @@
-package com.github.rgafiyatullin.akka_stream_scodec
+package com.github.rgafiyatullin.akka_stream_scodec.stages.mutable
 
-import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
-import scodec.{Attempt, Codec, DecodeResult}
+import com.github.rgafiyatullin.akka_stream_scodec.SCDecodeError
 import scodec.bits.BitVector
 import scodec.interop.akka._
+import scodec.{Attempt, Codec, DecodeResult}
 
 
 final case class SCDecodeStage[T](codec: Codec[T]) extends GraphStage[FlowShape[ByteString, T]] {

@@ -1,10 +1,11 @@
-package com.github.rgafiyatullin.akka_stream_scodec
+package com.github.rgafiyatullin.akka_stream_scodec.stages.mutable
 
-import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
+import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.util.ByteString
-import scodec.{Attempt, Codec}
+import com.github.rgafiyatullin.akka_stream_scodec.SCEncodeError
 import scodec.interop.akka._
+import scodec.{Attempt, Codec}
 
 final case class SCEncodeStage[T](codec: Codec[T]) extends GraphStage[FlowShape[T, ByteString]] {
   val inlet: Inlet[T] = Inlet("In:PDU")
