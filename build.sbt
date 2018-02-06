@@ -1,6 +1,6 @@
 name := "akka-stream-scodec"
 
-version := "0.1.1.0"
+version := "0.1.2.0"
 organization := "com.github.rgafiyatullin"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")

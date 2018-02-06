@@ -6,7 +6,7 @@ import akka.util.ByteString
 import com.github.rgafiyatullin.akka_stream_scodec.SCDecodeError
 import com.github.rgafiyatullin.akka_stream_util.custom_stream_stage.Stage
 import com.github.rgafiyatullin.akka_stream_util.custom_stream_stage.contexts._
-import scodec.{Attempt, Codec}
+import scodec.{Attempt, GenCodec}
 import scodec.bits.BitVector
 import scodec.interop.akka._
 
@@ -14,15 +14,17 @@ object SCDecodeStage {
   type MatValue = NotUsed
   type Shape[T] = FlowShape[ByteString, T]
 
+  type Decoder[T] = GenCodec[_, T]
+
   object State {
-    def create[T](codec: Codec[T], shape: Shape[T]): State[T] =
+    def create[T](codec: Decoder[T], shape: Shape[T]): State[T] =
       StateNormal(codec, shape, BitVector.empty)
   }
 
   sealed trait State[T] extends Stage.State[SCDecodeStage[T]]
 
   final case class StateInletClosed[T]
-    (codec: Codec[T],
+    (codec: Decoder[T],
      shape: Shape[T],
      buffer: BitVector,
      failureOption: Option[Throwable])
@@ -59,7 +61,7 @@ object SCDecodeStage {
   }
 
   final case class StateNormal[T]
-    (codec: Codec[T],
+    (codec: Decoder[T],
      shape: Shape[T],
      buffer: BitVector)
       extends State[T]
@@ -106,7 +108,7 @@ object SCDecodeStage {
   }
 }
 
-final case class SCDecodeStage[T](codec: Codec[T]) extends Stage[SCDecodeStage[T]] {
+final case class SCDecodeStage[T](codec: SCDecodeStage.Decoder[T]) extends Stage[SCDecodeStage[T]] {
   override type Shape = SCDecodeStage.Shape[T]
   override type State = SCDecodeStage.State[T]
   override type MatValue = SCDecodeStage.MatValue

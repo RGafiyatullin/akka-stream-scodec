@@ -6,15 +6,18 @@ import akka.util.ByteString
 import com.github.rgafiyatullin.akka_stream_scodec.SCEncodeError
 import com.github.rgafiyatullin.akka_stream_util.custom_stream_stage.Stage
 import com.github.rgafiyatullin.akka_stream_util.custom_stream_stage.contexts.{InletPushedContext, OutletPulledContext}
-import scodec.Codec
+import scodec.GenCodec
 import scodec.interop.akka._
 
 object SCEncodeStage {
   type Shape[T] = FlowShape[T, ByteString]
   type MatValue = NotUsed
-  final case class State[T](
-    codec: Codec[T],
-    shape: Shape[T])
+
+  type Encoder[T] = GenCodec[T, _]
+
+  final case class State[T]
+    (codec: Encoder[T],
+     shape: Shape[T])
       extends Stage.State[SCEncodeStage[T]]
   {
     override def inletOnPush(ctx: InletPushedContext[SCEncodeStage[T]]): InletPushedContext[SCEncodeStage[T]] =
@@ -29,13 +32,13 @@ object SCEncodeStage {
   }
 
   object State {
-    def create[T](codec: Codec[T], shape: Shape[T]): State[T] =
+    def create[T](codec: Encoder[T], shape: Shape[T]): State[T] =
       State(codec, shape)
   }
 
 }
 
-final case class SCEncodeStage[T](codec: Codec[T]) extends Stage[SCEncodeStage[T]] {
+final case class SCEncodeStage[T](codec: SCEncodeStage.Encoder[T]) extends Stage[SCEncodeStage[T]] {
   override type Shape = SCEncodeStage.Shape[T]
   override type State = SCEncodeStage.State[T]
   override type MatValue = SCEncodeStage.MatValue
