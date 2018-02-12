@@ -77,7 +77,9 @@ object SCDecodeStage {
             .withState(withBuffer(result.remainder))
 
         case Attempt.Failure(_: scodec.Err.InsufficientBits) =>
-          ctx.pull(shape.in)
+          ctx
+            .pull(shape.in)
+            .withState(this)
 
         case Attempt.Failure(reason) =>
           ctx.failStage(SCDecodeError(reason, codec))
@@ -87,13 +89,15 @@ object SCDecodeStage {
     override def inletOnUpstreamFinish
       (ctx: InletFinishedContext[SCDecodeStage[T]])
     : InletFinishedContext[SCDecodeStage[T]] =
-      ctx.withState(StateInletClosed(codec, shape, buffer, None))
+      if (buffer.isEmpty) ctx.completeStage()
+      else ctx.withState(StateInletClosed(codec, shape, buffer, None))
 
 
     override def inletOnUpstreamFailure
       (ctx: InletFailedContext[SCDecodeStage[T]])
     : InletFailedContext[SCDecodeStage[T]] =
-      ctx.withState(StateInletClosed(codec, shape, buffer, Some(ctx.reason)))
+      if (buffer.isEmpty) ctx.completeStage()
+      else ctx.withState(StateInletClosed(codec, shape, buffer, Some(ctx.reason)))
 
     override def inletOnPush
       (ctx: InletPushedContext[SCDecodeStage[T]])
